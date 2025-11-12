@@ -5,7 +5,6 @@ from app_pages import user_input, meal_plan
 if "current_page" not in st.session_state:
     st.session_state.current_page = "user_input"
 
-# -----------------------
 # Navigation
 if st.session_state.current_page == "user_input":
     user_input.show()
