@@ -1,5 +1,5 @@
 BACKGROUND = "#f6f6f6"  #Gray/White
-PRIMARY = "#463e7a"  #Dark Purple
-ACCENT = "#c8cf4b"  #Lime Green
-SUCCESS = "#00bf63"  #Vivid Green
-TEXT = "#000000"  #Black
+DARK_PURPLE = "#463e7a"
+LIME_GREEN = "#c8cf4b"
+GREEN = "#00bf63"
+BLACK = "#000000"
