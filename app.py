@@ -5,6 +5,12 @@ from app_pages import user_input, meal_plan
 if "current_page" not in st.session_state:
     st.session_state.current_page = "user_input"
 
+if "generated_plan" not in st.session_state:
+    st.session_state.generated_plan = None
+
+if "user_profile" not in st.session_state:
+    st.session_state.user_profile = {}
+
 # -----------------------
 # Navigation
 if st.session_state.current_page == "user_input":
