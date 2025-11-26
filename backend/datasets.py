@@ -100,3 +100,4 @@ if __name__ == "__main__":
 
     print("\n=== FIRST RECIPE ===")
     print(recipes[0])
+
