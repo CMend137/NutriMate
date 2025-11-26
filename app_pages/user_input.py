@@ -1,11 +1,34 @@
 import streamlit as st
 from assets import colors
+from NutriMate import meal_planner
+
+def calculate_calories(weight, height, age, gender, activity, goal):
+    # 1. BMR Calculation (Mifflin-St Jeor Equation)
+    if gender == "Male":
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5
+    else:
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161
+
+    # 2. Activity Multiplier
+    multipliers = {
+        "Sedentary": 1.2,
+        "Light": 1.375,
+        "Moderate": 1.55,
+        "Active": 1.725,
+        "Very Active": 1.9
+    }
+    tdee = bmr * multipliers.get(activity, 1.2)
+
+    # 3. Goal Adjustment
+    if goal == "Weight Loss":
+        return int(tdee - 500)
+    elif goal == "Weight Gain":
+        return int(tdee + 500)
+    else:
+        return int(tdee)
 
 def show():
-    st.set_page_config(
-        page_title="NutriMate",
-        page_icon="assets/logo.png",
-    )
+    st.set_page_config(page_title="NutriMate", page_icon="assets/logo.png")
 
     # Custom CSS
     st.markdown(
@@ -76,23 +99,57 @@ def show():
     # -----------------------
     st.subheader("Tell Us About Yourself")
 
-    st.text_input("First Name", key="first_name")
-    st.text_input("Last Name", key="last_name")
-    st.number_input("Age", min_value=1, max_value=120, key="age")
-    st.selectbox("Gender", ["Male", "Female", "Other"], key="gender")
+    col1, col2 = st.columns(2)
+    with col1:
+        first_name = st.text_input("First Name", key="first_name")
+        age = st.number_input("Age", min_value=1, max_value=120, key="age", value=25)
+        gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
+        
+    with col2:
+        last_name = st.text_input("Last Name", key="last_name")
+        # Weight Logic
+        w_unit = st.selectbox("Weight Unit", ["kg", "lbs"], key="weight_unit")
+        weight_val = st.number_input("Weight", min_value=1.0, key="weight", value=70.0)
+        
+        # Height Logic
+        h_unit = st.selectbox("Height Unit", ["cm", "inch"], key="height_unit")
+        height_val = st.number_input("Height", min_value=1.0, key="height", value=170.0)
 
-    # Weight + units
-    st.selectbox("Weight Unit", ["kg", "lbs"], key="weight_unit")
-    st.number_input("Weight", min_value=1.0, key="weight")
+    st.subheader("Preferences")
+    activity = st.selectbox("Activity Level", ["Sedentary", "Light", "Moderate", "Active", "Very Active"], key="activity")
+    goal = st.selectbox("Dietary Goal", ["Weight Loss", "Weight Gain", "Maintenance"], key="goal")
+    
+    # Budget Input
+    weekly_budget = st.number_input("Weekly Budget ($)", min_value=10.0, value=100.0, step=5.0, key="budget")
+    
+    restrictions = st.multiselect("Dietary Restrictions", ["Vegetarian", "Vegan", "Gluten-Free", "Lactose-Free"], key="restrictions")
 
-    # Height + units
-    st.selectbox("Height Unit", ["cm", "inch"], key="height_unit")
-    st.number_input("Height", min_value=1.0, key="height")
+    # Submit Logic
+    if st.button("Generate Plan"):
+        # Convert units to Metric
+        weight_kg = weight_val * 0.453592 if w_unit == "lbs" else weight_val
+        height_cm = height_val * 2.54 if h_unit == "inch" else height_val
 
-    st.selectbox("Activity Level", ["Sedentary", "Light", "Moderate", "Active", "Very Active"], key="activity")
-    st.selectbox("Dietary Goal", ["Weight Loss", "Weight Gain", "Maintenance"], key="goal")
-    st.multiselect("Dietary Restrictions", ["Vegetarian", "Vegan", "Gluten-Free", "Lactose Intolerant"], key="restrictions")
+        # Calculate Calories
+        daily_cals = calculate_calories(weight_kg, height_cm, age, gender, activity, goal)
 
-    # Submit button
-    if st.button("Submit"):
-        st.session_state.current_page = "meal_plan"
+        # Create Profile Dict
+        user_profile = {
+            "name": first_name,
+            "goal": goal,
+            "activity_level": activity,
+            "daily_calories": daily_cals,
+            "weekly_budget": weekly_budget,
+            "restrictions": restrictions
+        }
+        st.session_state.user_profile = user_profile
+
+        # CALL BACKEND
+        with st.spinner("AI Agents are crafting your menu..."):
+            try:
+                plan = meal_planner.build_weekly_plan(weekly_budget, restrictions)
+                st.session_state.generated_plan = plan
+                st.session_state.current_page = "meal_plan"
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error generating plan: {e}")
