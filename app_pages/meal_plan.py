@@ -1,7 +1,8 @@
 import streamlit as st
 from assets import colors
 from app_navigation import card, summary
-from NutriMate import llm_recommender
+from backend import llm_recommender
+from backend.meal_planner import generate_shopping_list
 
 def show():
     st.set_page_config(page_title="NutriMate - Meal Plan", page_icon="assets/logo.png")
@@ -15,10 +16,10 @@ def show():
         }}
 
         .stButton>button {{
-            background-color: {colors.BACKGROUND};
-            color: black;
+            background-color: {colors.DARK_PURPLE}; 
+            color: white !important; 
             height: 45px;
-            width: 180px;
+            width: 200px;
             font-size: 20px;
             border-radius: 10px;
             transition: all 0.3s ease-in-out;
@@ -26,17 +27,9 @@ def show():
         }}
 
         .stButton>button:hover {{
-            background-color: {colors.DARK_PURPLE};
-            color: white;
+            background-color: {colors.BACKGROUND}; 
+            color: black !important; 
             transform: scale(1.05);
-        }}
-
-        [data-testid="stSidebar"] > div:first-child {{
-            background-color: {colors.BACKGROUND};
-        }}
-
-        [data-testid="stSidebar"] * {{
-            color: black;
         }}
 
         .meal-card {{
@@ -56,6 +49,18 @@ def show():
             margin: 0;
             font-size: 16px;
         }}
+
+        [data-testid="stTextarea"] {{
+            background-color: {colors.DARK_PURPLE}; 
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid {colors.DARK_PURPLE}; 
+        }}
+    
+        [data-testid="stTabs"] button {{
+            color: black;
+        }}
+        
         </style>
         """,
         unsafe_allow_html=True
@@ -76,15 +81,14 @@ def show():
 
     # --- Sidebar ---
     st.sidebar.image("assets/logo.png", width=200)
-    st.sidebar.title(f"Hi, {user_profile.get('name', 'Friend')}!")
+    st.sidebar.title(f"Hi {user_profile.get('name', 'There')}!")
 
     # Sidebar LLM Chat
-    st.sidebar.markdown("---")
     st.sidebar.subheader("Ask NutriMate AI")
     user_q = st.sidebar.text_input("Questions about your plan?")
     if st.sidebar.button("Ask"):
         if user_q:
-            with st.sidebar.spinner("Thinking..."):
+            with st.spinner("Thinking..."):
                 # Convert list format to dict for LLM compatibility
                 plan_dict_for_llm = {d['day']: d for d in full_plan}
                 answer = llm_recommender.answer_user_question(plan_dict_for_llm, user_q, user_profile)
@@ -152,12 +156,6 @@ def show():
                 text = llm_recommender.suggest_alternatives(plan_dict_for_llm, user_profile)
                 st.markdown(text)
 
-    with tab3:
-        st.subheader("Shopping List")
-        
-        st.info("Here are the recipes you need to shop for:")
-        for day in full_plan:
-            st.markdown(f"**{day['day']}**")
-            st.write(f"- {day['Breakfast']['name']}")
-            st.write(f"- {day['Lunch']['name']}")
-            st.write(f"- {day['Dinner']['name']}")
+    with tab3:        
+        shopping_list_md = generate_shopping_list(plan_data)
+        st.markdown(shopping_list_md)
