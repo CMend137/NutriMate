@@ -1,15 +1,15 @@
 import streamlit as st
 from assets import colors
-from NutriMate import meal_planner
+from backend import meal_planner
 
 def calculate_calories(weight, height, age, gender, activity, goal):
-    # 1. BMR Calculation (Mifflin-St Jeor Equation)
+    # BMR Calculation
     if gender == "Male":
         bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5
     else:
         bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161
 
-    # 2. Activity Multiplier
+    # Activity Multiplier
     multipliers = {
         "Sedentary": 1.2,
         "Light": 1.375,
@@ -19,7 +19,7 @@ def calculate_calories(weight, height, age, gender, activity, goal):
     }
     tdee = bmr * multipliers.get(activity, 1.2)
 
-    # 3. Goal Adjustment
+    # Goal Adjustment
     if goal == "Weight Loss":
         return int(tdee - 500)
     elif goal == "Weight Gain":
@@ -57,13 +57,6 @@ def show():
             transform: scale(1.05);
         }}
 
-        [data-testid="stSidebar"] > div:first-child {{
-            background-color: {colors.BACKGROUND};
-        }}
-
-        [data-testid="stSidebar"] * {{
-            color: black;
-        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -74,20 +67,20 @@ def show():
     st.sidebar.title("Menu")
     menu_choice = st.sidebar.radio(
         "Navigate",
-        ["How it Works", "About Us", "Contact Us"]
+        ["How It Works", "About Us", "Contact Us"]
     )
 
-    if menu_choice == "How it Works":
+    if menu_choice == "How It Works":
         st.sidebar.markdown("""
-        1. Enter your profile information and preferences.
-        2. AI agents calculate weekly calorie needs and filter recipes.
-        3. View your weekly meal plan with nutritional breakdowns and total cost.
+        1.  **Profile Customization:** Establish your dietary and fitness parameters, including **activity level, calorie targets, and budget.**
+        2.  **AI-Driven Optimization:** Our specialized **AI agents** process your profile against a verified recipe database to determine the optimal weekly meal schedule and calculate required nutritional values.
+        3.  **Comprehensive Reporting:** Instantly visualize your complete **7-day meal plan**, detailed nutritional totals (Protein, Carbs, Fat, Calories), and the final **total cost** breakdown.
         """)
     elif menu_choice == "About Us":
         st.sidebar.markdown("""
-        **NutriMate** is a lightweight AI-driven app that generates personalized, budget-friendly weekly meal plans.
-
-        Our mission is to make healthy eating accessible to everyone!
+        ### **Our Platform**
+        
+        **NutriMate** is a cutting-edge, **AI-driven optimization platform** designed to resolve nutritional planning complexities. We leverage proprietary algorithms and large language models to generate **personalized, cost-optimized,** weekly meal plans, driving efficiency and budget compliance for every user.
         """)
     elif menu_choice == "Contact Us":
         st.sidebar.markdown("""
@@ -102,25 +95,23 @@ def show():
     col1, col2 = st.columns(2)
     with col1:
         first_name = st.text_input("First Name", key="first_name")
-        age = st.number_input("Age", min_value=1, max_value=120, key="age", value=25)
-        gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
+        age = st.number_input("Age", min_value=1, max_value=120, key="age")
+        weight_val = st.number_input("Weight", min_value=1.0, key="weight")
+        height_val = st.number_input("Height", min_value=1.0, key="height")
+        
         
     with col2:
         last_name = st.text_input("Last Name", key="last_name")
-        # Weight Logic
+        gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
         w_unit = st.selectbox("Weight Unit", ["kg", "lbs"], key="weight_unit")
-        weight_val = st.number_input("Weight", min_value=1.0, key="weight", value=70.0)
-        
-        # Height Logic
         h_unit = st.selectbox("Height Unit", ["cm", "inch"], key="height_unit")
-        height_val = st.number_input("Height", min_value=1.0, key="height", value=170.0)
 
     st.subheader("Preferences")
     activity = st.selectbox("Activity Level", ["Sedentary", "Light", "Moderate", "Active", "Very Active"], key="activity")
     goal = st.selectbox("Dietary Goal", ["Weight Loss", "Weight Gain", "Maintenance"], key="goal")
     
     # Budget Input
-    weekly_budget = st.number_input("Weekly Budget ($)", min_value=10.0, value=100.0, step=5.0, key="budget")
+    weekly_budget = st.number_input("Weekly Budget ($)", min_value=70.0, step=5.0, key="budget")
     
     restrictions = st.multiselect("Dietary Restrictions", ["Vegetarian", "Vegan", "Gluten-Free", "Lactose-Free"], key="restrictions")
 
@@ -147,7 +138,7 @@ def show():
         # CALL BACKEND
         with st.spinner("AI Agents are crafting your menu..."):
             try:
-                plan = meal_planner.build_weekly_plan(weekly_budget, restrictions)
+                plan = meal_planner.build_weekly_plan(weekly_budget)
                 st.session_state.generated_plan = plan
                 st.session_state.current_page = "meal_plan"
                 st.rerun()
