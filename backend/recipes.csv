@@ -1,0 +1,25 @@
+﻿id,name,meal_type,diet,ingredients
+gf_banana_oat_bowl,GF Banana Oat Bowl,breakfast,gluten_free,oats:50g;almond_milk:150g;banana:1 unit;chia_seeds:10g
+gf_spinach_egg_scramble,GF Spinach Egg Scramble,breakfast,gluten_free,egg:2 units;spinach:50g;tomato:30g
+veggie_yogurt_parfait,Veggie Yogurt Parfait,breakfast,vegetarian,greek_yogurt:150g;berries:50g;chia_seeds:10g
+veggie_avocado_toast,Veggie Avocado Toast,breakfast,vegetarian,gf_bread:2 units;avocado:50g;tomato:30g
+vegan_oatmeal_bowl,Vegan Oatmeal Bowl,breakfast,vegan,oats:50g;almond_milk:150g;berries:50g;chia_seeds:10g
+tofu_breakfast_scramble,Tofu breakfast Scramble,breakfast,vegan,tofu:100g;spinach:50g;onion:30g
+lf_chia_pudding,LF Chia Pudding,breakfast,lactose_free,chia_seeds:30g;almond_milk:200g;berries:50g
+gf_veggie_omelet,GF Veggie Omelet,breakfast,gluten_free,egg:2 units;spinach:50g;onion:20g
+gf_quinoa_breakfast_bowl,GF Quinoa breakfast Bowl,breakfast,gluten_free,quinoa:60g;berries:50g;almond_milk:100g
+gf_chicken_rice_bowl,GF Chicken Rice Bowl,lunch,gluten_free,chicken_breast:150g;rice:150g;broccoli:60g
+veggie_lentil_salad,Veggie Lentil Salad,lunch,vegetarian,lentils:100g;tomato:50g;spinach:50g
+veggie_pasta_bowl,Veggie Pasta Bowl,lunch,vegetarian,gf_pasta:100g;tomato:50g;vegan_cheese:30g
+gf_quinoa_lunch_bowl,GF Quinoa lunch Bowl,lunch,gluten_free,quinoa:60g;black_beans:80g;spinach:50g
+veggie_tempeh_bowl,Veggie Tempeh Bowl,lunch,vegetarian,tempeh:100g;rice:150g;broccoli:50g
+lf_chickpea_quinoa_bowl,LF Chickpea Quinoa Bowl,lunch,lactose_free,quinoa:60g;black_beans:80g;cucumber:50g
+gf_stir_fry,GF Stir Fry,dinner,gluten_free,tofu:100g;broccoli:50g;onion:30g;olive_oil:10g
+gf_sweet_potato_bowl,GF Sweet Potato Bowl,dinner,gluten_free,sweet_potato:150g;black_beans:80g;spinach:50g
+gf_lentil_bowl,GF Lentil Bowl,dinner,gluten_free,lentils:100g;spinach:50g;tomato:40g
+veggie_curry_rice,Veggie Curry Rice,dinner,vegetarian,rice:150g;coconut_milk:100g;mixed_vegetables:100g
+vegan_sweet_potato_bowl,Vegan Sweet Potato Bowl,dinner,vegan,sweet_potato:150g;black_beans:80g;spinach:50g
+lf_chicken_pasta,LF Chicken Pasta,dinner,lactose_free,chicken_breast:150g;gf_pasta:100g;tomato:40g
+lf_stir_fry_bowl,LF Stir Fry Bowl,dinner,lactose_free,tofu:100g;broccoli:50g;rice:100g
+veggie_quinoa_veg_bowl,Veggie Quinoa Veg Bowl,dinner,vegetarian,quinoa:60g;spinach:50g;tomato:40g
+vegetarian_pasta_primavera,Vegetarian Pasta Primavera,dinner,vegetarian,gf_pasta:100g;tomato:50g;spinach:50g
