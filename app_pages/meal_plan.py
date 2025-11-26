@@ -1,12 +1,10 @@
 import streamlit as st
 from assets import colors
-
+from app_navigation import card, summary
+from NutriMate import llm_recommender
 
 def show():
-    st.set_page_config(
-        page_title="NutriMate - Meal Plan",
-        page_icon="assets/logo.png",
-    )
+    st.set_page_config(page_title="NutriMate - Meal Plan", page_icon="assets/logo.png")
 
     st.markdown(
         f"""
@@ -63,111 +61,103 @@ def show():
         unsafe_allow_html=True
     )
 
+    # Retrieve data
+    plan_data = st.session_state.get("generated_plan")
+    user_profile = st.session_state.get("user_profile")
+
+    if not plan_data:
+        st.warning("No plan generated yet. Please go back.")
+        if st.button("Go Back"):
+            st.session_state.current_page = "user_input"
+            st.rerun()
+        return
+
+    full_plan = plan_data["weekly_plan"] # List of days
+
     # --- Sidebar ---
     st.sidebar.image("assets/logo.png", width=200)
-    st.sidebar.title("Menu")
-    menu_choice = st.sidebar.radio(
-        "Navigate",
-        ["Weekly Plan", "Nutrition Summary", "Shopping List"]
-    )
+    st.sidebar.title(f"Hi, {user_profile.get('name', 'Friend')}!")
 
+    # Sidebar LLM Chat
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Ask NutriMate AI")
+    user_q = st.sidebar.text_input("Questions about your plan?")
+    if st.sidebar.button("Ask"):
+        if user_q:
+            with st.sidebar.spinner("Thinking..."):
+                # Convert list format to dict for LLM compatibility
+                plan_dict_for_llm = {d['day']: d for d in full_plan}
+                answer = llm_recommender.answer_user_question(plan_dict_for_llm, user_q, user_profile)
+                st.sidebar.markdown(answer)
+                
+    # --- Main Content ---
     st.title("Your Personalized Meal Plan")
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-    # --- Sample Data ---
-    sample_meals = [
-        {"Breakfast": "Oatmeal with Berries", "Lunch": "Grilled Chicken Salad", "Dinner": "Salmon with Veggies"},
-        {"Breakfast": "Avocado Toast", "Lunch": "Turkey Wrap", "Dinner": "Beef Stir Fry"},
-        {"Breakfast": "Smoothie Bowl", "Lunch": "Quinoa Salad", "Dinner": "Chicken Fajitas"},
-        {"Breakfast": "Egg Whites & Toast", "Lunch": "Shrimp Tacos", "Dinner": "Pasta Primavera"},
-        {"Breakfast": "Greek Yogurt & Fruit", "Lunch": "Burrito Bowl", "Dinner": "Grilled Steak"},
-        {"Breakfast": "Pancakes", "Lunch": "Tuna Sandwich", "Dinner": "Veggie Curry"},
-        {"Breakfast": "Scrambled Eggs", "Lunch": "Chicken Caesar Salad", "Dinner": "Sushi Night"},
-    ]
+    tab1, tab2, tab3 = st.tabs(["Weekly Menu", "AI Insights", "Shopping List"])
+    with tab1:
+        # Totals for the summary box
+        total_cals = sum(d['daily_calories'] for d in full_plan)
+        total_prot = sum(d['Breakfast']['data']['protein'] + d['Lunch']['data']['protein'] + d['Dinner']['data']['protein'] for d in full_plan)
+        total_carbs = sum(d['Breakfast']['data']['carbs'] + d['Lunch']['data']['carbs'] + d['Dinner']['data']['carbs'] for d in full_plan)
+        total_fat = sum(d['Breakfast']['data']['fat'] + d['Lunch']['data']['fat'] + d['Dinner']['data']['fat'] for d in full_plan)
+        
+        summary.summary_box(
+            int(total_cals), 
+            int(total_prot), 
+            int(total_carbs), 
+            int(total_fat), 
+            plan_data["total_weekly_cost"]
+        )
+        
+        st.markdown("---")
 
-    nutrition_summary = [
-        {"Calories": 1800, "Protein": 95, "Carbs": 200, "Fat": 60},
-        {"Calories": 1900, "Protein": 100, "Carbs": 210, "Fat": 65},
-        {"Calories": 1750, "Protein": 90, "Carbs": 190, "Fat": 55},
-        {"Calories": 1850, "Protein": 95, "Carbs": 205, "Fat": 60},
-        {"Calories": 2000, "Protein": 110, "Carbs": 220, "Fat": 70},
-        {"Calories": 1950, "Protein": 85, "Carbs": 230, "Fat": 65},
-        {"Calories": 1800, "Protein": 95, "Carbs": 200, "Fat": 60},
-    ]
-
-    ingredients = {
-        "Oatmeal with Berries": ["Oats", "Blueberries", "Almond milk", "Honey"],
-        "Grilled Chicken Salad": ["Chicken breast", "Lettuce", "Tomato", "Cucumber", "Olive oil"],
-        "Salmon with Veggies": ["Salmon", "Broccoli", "Carrots", "Olive oil", "Garlic"],
-        "Avocado Toast": ["Avocado", "Whole grain bread", "Lime", "Salt", "Pepper"],
-        "Turkey Wrap": ["Turkey slices", "Tortilla", "Lettuce", "Cheese"],
-        "Beef Stir Fry": ["Beef strips", "Soy sauce", "Bell peppers", "Rice"],
-        "Smoothie Bowl": ["Banana", "Spinach", "Protein powder", "Almond milk"],
-        "Quinoa Salad": ["Quinoa", "Tomatoes", "Cucumber", "Feta cheese"],
-        "Chicken Fajitas": ["Chicken breast", "Bell peppers", "Onion", "Tortilla"],
-        "Egg Whites & Toast": ["Egg whites", "Whole grain bread", "Spinach"],
-        "Shrimp Tacos": ["Shrimp", "Cabbage", "Tortilla", "Lime"],
-        "Pasta Primavera": ["Pasta", "Zucchini", "Tomatoes", "Parmesan"],
-        "Greek Yogurt & Fruit": ["Greek yogurt", "Strawberries", "Granola"],
-        "Burrito Bowl": ["Rice", "Black beans", "Chicken", "Corn", "Avocado"],
-        "Grilled Steak": ["Steak", "Asparagus", "Olive oil"],
-        "Pancakes": ["Flour", "Eggs", "Milk", "Maple syrup"],
-        "Tuna Sandwich": ["Tuna", "Bread", "Lettuce", "Mayo"],
-        "Veggie Curry": ["Chickpeas", "Coconut milk", "Curry paste", "Spinach"],
-        "Scrambled Eggs": ["Eggs", "Butter", "Milk"],
-        "Chicken Caesar Salad": ["Chicken", "Romaine lettuce", "Caesar dressing", "Croutons"],
-        "Sushi Night": ["Rice", "Seaweed", "Salmon", "Soy sauce"]
-    }
-
-    # --- PAGE LOGIC ---
-    if menu_choice == "Weekly Plan":
-        st.markdown("Here’s your weekly meal plan with nutrition info for each day.")
-        for i, day in enumerate(days):
-            with st.container():
-                st.markdown(f"<div class='meal-card'><h4>{day}</h4>", unsafe_allow_html=True)
-                st.markdown(f"""
-                <p><strong>Breakfast:</strong> {sample_meals[i]['Breakfast']}</p>
-                <p><strong>Lunch:</strong> {sample_meals[i]['Lunch']}</p>
-                <p><strong>Dinner:</strong> {sample_meals[i]['Dinner']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-                st.markdown(
-                    f"""
-                    <div class='nutrition'>
-                    <strong>Nutrition Summary:</strong><br>
-                    Calories: {nutrition_summary[i]['Calories']} kcal |
-                    Protein: {nutrition_summary[i]['Protein']} g |
-                    Carbs: {nutrition_summary[i]['Carbs']} g |
-                    Fat: {nutrition_summary[i]['Fat']} g
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+        for day_data in full_plan:
+            st.header(day_data['day'])
+            
+            def render_meal(meal_type_key):
+                meal = day_data[meal_type_key]
+                data = meal['data']
+                card.meal_card(
+                    day=day_data['day'],
+                    meal_type=meal_type_key,
+                    recipe_name=meal['name'],
+                    calories=data['calories'],
+                    protein=data['protein'],
+                    carbs=data['carbs'],
+                    fats=data['fat'],
+                    cost=data['cost']
                 )
+            
+            render_meal("Breakfast")
+            render_meal("Lunch")
+            render_meal("Dinner")
 
-    elif menu_choice == "Nutrition Summary":
-        st.subheader("Nutrition Summary")
-        avg_calories = sum(d["Calories"] for d in nutrition_summary) // len(nutrition_summary)
-        avg_protein = sum(d["Protein"] for d in nutrition_summary) // len(nutrition_summary)
-        avg_carbs = sum(d["Carbs"] for d in nutrition_summary) // len(nutrition_summary)
-        avg_fat = sum(d["Fat"] for d in nutrition_summary) // len(nutrition_summary)
+    with tab2:
+        st.subheader("AI-Powered Analysis")
+        
+        plan_dict_for_llm = {d['day']: d for d in full_plan}
 
-        st.markdown(f"""
-        **Average Daily Intake:**
-        - Calories: {avg_calories} kcal  
-        - Protein: {avg_protein} g  
-        - Carbs: {avg_carbs} g  
-        - Fat: {avg_fat} g  
-        """)
+        if st.button("Generate Executive Summary"):
+            with st.spinner("Analyzing nutrients..."):
+                text = llm_recommender.summarize_weekly_plan(plan_dict_for_llm, user_profile)
+                st.markdown(text)
+        
+        if st.button("Analyze Budget & Calories"):
+            with st.spinner("Checking budget..."):
+                text = llm_recommender.analyze_budget_and_calories(plan_dict_for_llm, user_profile)
+                st.markdown(text)
 
-    elif menu_choice == "Shopping List":
+        if st.button("Suggest Alternatives"):
+            with st.spinner("Finding swaps..."):
+                text = llm_recommender.suggest_alternatives(plan_dict_for_llm, user_profile)
+                st.markdown(text)
+
+    with tab3:
         st.subheader("Shopping List")
-        all_items = set()
-        for day_meals in sample_meals:
-            for meal_name in day_meals.values():
-                all_items.update(ingredients.get(meal_name, []))
-
-        st.markdown("<div class='shopping-list'>", unsafe_allow_html=True)
-        for item in sorted(all_items):
-            st.markdown(f"- {item}")
-        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.info("Here are the recipes you need to shop for:")
+        for day in full_plan:
+            st.markdown(f"**{day['day']}**")
+            st.write(f"- {day['Breakfast']['name']}")
+            st.write(f"- {day['Lunch']['name']}")
+            st.write(f"- {day['Dinner']['name']}")
