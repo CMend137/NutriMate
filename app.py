@@ -11,7 +11,6 @@ if "generated_plan" not in st.session_state:
 if "user_profile" not in st.session_state:
     st.session_state.user_profile = {}
 
-# -----------------------
 # Navigation
 if st.session_state.current_page == "user_input":
     user_input.show()
