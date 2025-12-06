@@ -30,7 +30,6 @@ def calculate_calories(weight, height, age, gender, activity, goal):
 def show():
     st.set_page_config(page_title="NutriMate", page_icon="assets/logo.png")
 
-    # Custom CSS
     st.markdown(
         f"""
         <style>
@@ -110,21 +109,17 @@ def show():
     activity = st.selectbox("Activity Level", ["Sedentary", "Light", "Moderate", "Active", "Very Active"], key="activity")
     goal = st.selectbox("Dietary Goal", ["Weight Loss", "Weight Gain", "Maintenance"], key="goal")
     
-    # Budget Input
     weekly_budget = st.number_input("Weekly Budget ($)", min_value=70.0, step=5.0, key="budget")
     
     restrictions = st.multiselect("Dietary Restrictions", ["Vegetarian", "Vegan", "Gluten-Free", "Lactose-Free"], key="restrictions")
 
-    # Submit Logic
+    # Submit
     if st.button("Generate Plan"):
-        # Convert units to Metric
         weight_kg = weight_val * 0.453592 if w_unit == "lbs" else weight_val
         height_cm = height_val * 2.54 if h_unit == "inch" else height_val
 
-        # Calculate Calories
         daily_cals = calculate_calories(weight_kg, height_cm, age, gender, activity, goal)
 
-        # Create Profile Dict
         user_profile = {
             "name": first_name,
             "goal": goal,
@@ -135,7 +130,6 @@ def show():
         }
         st.session_state.user_profile = user_profile
 
-        # CALL BACKEND
         with st.spinner("AI Agents are crafting your menu..."):
             try:
                 plan = meal_planner.build_weekly_plan(weekly_budget)
