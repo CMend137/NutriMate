@@ -66,7 +66,6 @@ def show():
         unsafe_allow_html=True
     )
 
-    # Retrieve data
     plan_data = st.session_state.get("generated_plan")
     user_profile = st.session_state.get("user_profile")
 
@@ -77,19 +76,17 @@ def show():
             st.rerun()
         return
 
-    full_plan = plan_data["weekly_plan"] # List of days
+    full_plan = plan_data["weekly_plan"]
 
     # --- Sidebar ---
     st.sidebar.image("assets/logo.png", width=200)
     st.sidebar.title(f"Hi {user_profile.get('name', 'There')}!")
 
-    # Sidebar LLM Chat
     st.sidebar.subheader("Ask NutriMate AI")
     user_q = st.sidebar.text_input("Questions about your plan?")
     if st.sidebar.button("Ask"):
         if user_q:
             with st.spinner("Thinking..."):
-                # Convert list format to dict for LLM compatibility
                 plan_dict_for_llm = {d['day']: d for d in full_plan}
                 answer = llm_recommender.answer_user_question(plan_dict_for_llm, user_q, user_profile)
                 st.sidebar.markdown(answer)
@@ -99,7 +96,6 @@ def show():
 
     tab1, tab2, tab3 = st.tabs(["Weekly Menu", "AI Insights", "Shopping List"])
     with tab1:
-        # Totals for the summary box
         total_cals = sum(d['daily_calories'] for d in full_plan)
         total_prot = sum(d['Breakfast']['data']['protein'] + d['Lunch']['data']['protein'] + d['Dinner']['data']['protein'] for d in full_plan)
         total_carbs = sum(d['Breakfast']['data']['carbs'] + d['Lunch']['data']['carbs'] + d['Dinner']['data']['carbs'] for d in full_plan)
