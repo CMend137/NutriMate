@@ -19,3 +19,4 @@ def meal_card(day, meal_type, recipe_name, calories, protein, carbs, fats, cost)
         col3.metric("Carb", f"{carbs}g")
         col4.metric("Fat", f"{fats}g")
         col5.metric("Cost", f"${cost:.2f}")
+
